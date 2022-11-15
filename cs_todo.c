@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -221,6 +220,46 @@ void command_loop(struct todo_list *todo) {
             int start_time;
             int finish_time;
             parse_complete_task_line(buffer, task, category, &start_time, &finish_time);
+
+
+            if (find_task(todo, task, category) != NULL) {
+                // Create a mew completed task
+                struct completed_task *new_completed_task = create_new_completed_task(
+                    find_task(todo, task, category),
+                    start_time,
+                    finish_time
+                );
+
+                // Add completed task if todo list is empty
+                if (todo->completed_tasks == NULL) {
+                    todo->completed_tasks = new_completed_task;
+                } else {
+                    // Insert new completed task in the beginning of the list
+                    new_completed_task->next = todo->completed_tasks;
+                    todo->completed_tasks = new_completed_task;
+                }
+
+                // Remove task from todo tasks
+                // If task is first in todo list (head)
+                struct task *temp_task = todo->tasks;
+                if (temp_task == find_task(todo, task, category)) {
+                    todo->tasks = todo->tasks->next;
+                // If task is last in the todo list (tail)
+                } else if (find_task(todo, task, category)->next == NULL) {
+                    while (temp_task->next->next != NULL) {
+                        temp_task = temp_task->next;
+                    }
+                    temp_task->next = NULL;
+                // If task is in middle of todo list
+                } else {
+                    while (temp_task->next != find_task(todo, task, category)) {
+                        if (temp_task->next != NULL) {
+                            temp_task = temp_task->next;
+                        }
+                    }
+                    temp_task->next = temp_task->next->next;
+                }
+            }
         }
 
         printf("Enter Command: ");
