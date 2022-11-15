@@ -16,6 +16,7 @@
 #define COMMAND_COMPLETE_TASK 'c'
 #define COMMAND_PRINT_COMPLETED_TASK 'P'
 #define COMMAND_EXPECTED_TIME 'e'
+#define COMMAND_DELETE_TASK 'd'
 
 enum priority { LOW, MEDIUM, HIGH };
 
@@ -292,6 +293,41 @@ void command_loop(struct todo_list *todo) {
         
                 counter++;
                 current_task = current_task->next;
+            }
+        }
+
+        // Stage 3.1
+        if (command == COMMAND_DELETE_TASK) {
+            // Get inputs from the command line (code sampled from spec Stage 3.1)
+            char buffer[MAX_STRING_LENGTH];
+            fgets(buffer, MAX_STRING_LENGTH, stdin);
+
+            char task[MAX_TASK_LENGTH];
+            char category[MAX_CATEGORY_LENGTH];
+            parse_task_category_line(buffer, task, category);
+            
+            // find task and delete the task
+            // Remove task from todo tasks (!!! MAKE DELETING TASKS ITS OWN FUNCTION - USED IN STAGE 2.1 TOO)
+            // If task is first in todo list (head)
+            if (find_task(todo, task, category) != NULL) {
+                struct task *temp_task = todo->tasks;
+                if (temp_task == find_task(todo, task, category)) {
+                    todo->tasks = todo->tasks->next;
+                // If task is last in the todo list (tail)
+                } else if (find_task(todo, task, category)->next == NULL) {
+                    while (temp_task->next->next != NULL) {
+                        temp_task = temp_task->next;
+                    }
+                    temp_task->next = NULL;
+                // If task is in middle of todo list
+                } else {
+                    while (temp_task->next != find_task(todo, task, category)) {
+                        if (temp_task->next != NULL) {
+                            temp_task = temp_task->next;
+                        }
+                    }
+                    temp_task->next = temp_task->next->next;
+                }
             }
         }
 
