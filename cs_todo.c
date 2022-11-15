@@ -14,6 +14,7 @@
 #define COMMAND_INCREASE_TASK 'i'
 #define COMMAND_NUM_TASK 'n'
 #define COMMAND_COMPLETE_TASK 'c'
+#define COMMAND_PRINT_COMPLETED_TASK 'P'
 
 enum priority { LOW, MEDIUM, HIGH };
 
@@ -260,6 +261,22 @@ void command_loop(struct todo_list *todo) {
                     temp_task->next = temp_task->next->next;
                 }
             }
+        }
+
+        // Stage 2.2
+        if (command == COMMAND_PRINT_COMPLETED_TASK) {
+            printf("==== Completed Tasks ====\n");
+            // No completed tasks in todo list
+            if (todo->completed_tasks == NULL) {
+                printf("No tasks have been completed today!\n");
+            } else {
+                struct completed_task *temp_completed_task = todo->completed_tasks;
+                while (temp_completed_task != NULL) {
+                    print_completed_task(temp_completed_task);
+                    temp_completed_task = temp_completed_task->next;
+                }
+            }
+            printf("=========================\n");
         }
 
         printf("Enter Command: ");
