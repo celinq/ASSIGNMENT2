@@ -15,6 +15,7 @@
 #define COMMAND_NUM_TASK 'n'
 #define COMMAND_COMPLETE_TASK 'c'
 #define COMMAND_PRINT_COMPLETED_TASK 'P'
+#define COMMAND_EXPECTED_TIME 'e'
 
 enum priority { LOW, MEDIUM, HIGH };
 
@@ -60,7 +61,7 @@ static struct completed_task *create_new_completed_task(
     int start_time,
     int finish_time
 );
-
+int average_time(struct todo_list *todo, char category[MAX_CATEGORY_LENGTH]);
 
 
 
@@ -279,6 +280,21 @@ void command_loop(struct todo_list *todo) {
             printf("=========================\n");
         }
 
+        // Stage 2.3
+        if (command == COMMAND_EXPECTED_TIME) {
+            printf("Expected completion time for remaining tasks:\n\n");
+            struct task *current_task = todo->tasks;
+            int counter = 1;
+            while (current_task != NULL) {
+                print_one_task(counter, current_task);
+                int time = average_time(todo, current_task->category);
+                printf("Expected completion time: %d minutes\n\n", time);
+        
+                counter++;
+                current_task = current_task->next;
+            }
+        }
+
         printf("Enter Command: ");
     }
 }
@@ -344,6 +360,7 @@ static struct task *find_task(
     printf("Could not find task '%s' in category '%s'.\n", task, category);
     return NULL;
 }
+
 /**
  * Create a new completed task and return a pointer to it
  *
@@ -369,6 +386,39 @@ static struct completed_task *create_new_completed_task(
     new_completed_task->next = NULL;
 
     return new_completed_task;
+}
+
+/**
+ * Get average time to complete a task given category
+ *
+ * Parameters:
+ *     task - task struct of the completed task
+ *     start_time - time task started in minutes
+ *     finish_time - time task finished in minutes
+ *
+ * Returns:
+ *     struct completed_task *new_completed task
+ */
+int average_time(struct todo_list *todo, char category[MAX_CATEGORY_LENGTH]) {
+    // Initialize time = 0
+    int total_time = 0;
+    int matching_category = 0;
+    // Traverse through completed tasks, if category matches, 
+    // add the time taken to complete to total
+    struct completed_task *temp_completed_task = todo->completed_tasks;
+    while (temp_completed_task != NULL) {
+        if (strcmp(temp_completed_task->task->category, category) == 0) {
+            total_time += (temp_completed_task->finish_time - temp_completed_task->start_time);
+            matching_category++;
+        }
+        temp_completed_task = temp_completed_task->next;
+    }
+    // If no matching categories, return 100 minutes
+    if (matching_category == 0) {
+        return 100;
+    } else {
+        return total_time / matching_category;
+    }
 }
 
 
